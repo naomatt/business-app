@@ -23,6 +23,7 @@ export default function Com() {
     fetch('https://business-api-n4v1.onrender.com/kiji1')
     .then(res => res.json())
     .then(data => {
+      console.log('kiji1取得:', data);
       const filtered = data.filter(item => item.atsukai_id === Number(selectedId));
       setKiji1List(filtered);
     });
@@ -30,6 +31,7 @@ export default function Com() {
     fetch('https://business-api-n4v1.onrender.com/kiji2')
     .then(res => res.json())
     .then(data => {
+      console.log('kiji2取得:', data);
       const filtered = data.filter(item => item.atsukai_id === Number(selectedId));
       setKiji2List(filtered);
     });
