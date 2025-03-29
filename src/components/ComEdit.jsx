@@ -30,14 +30,14 @@ export default function ComEdit() {
     fetch('https://business-api-n4v1.onrender.com/kiji1')
       .then(res => res.json())
       .then(data => {
-        const filtered = data.filter(item => item.atsukai_id === Number(selectedId));
+        const filtered = data.filter(item => Number(item.atsukai_id) === Number(selectedId));
         setKiji1List(filtered);
       });
 
     fetch('https://business-api-n4v1.onrender.com/kiji2')
       .then(res => res.json())
       .then(data => {
-        const filtered = data.filter(item => item.atsukai_id === Number(selectedId));
+        const filtered = data.filter(item => Number(item.atsukai_id) === Number(selectedId));
         setKiji2List(filtered);
       });
   }, [selectedId, atsukaiList]);

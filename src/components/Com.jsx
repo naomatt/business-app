@@ -24,7 +24,7 @@ export default function Com() {
     .then(res => res.json())
     .then(data => {
       console.log('kiji1取得:', data);
-      const filtered = data.filter(item => item.atsukai_id === Number(selectedId));
+      const filtered = data.filter(item => Number(item.atsukai_id) === Number(selectedId));
       setKiji1List(filtered);
     });
     // kiji2を取得
@@ -32,7 +32,7 @@ export default function Com() {
     .then(res => res.json())
     .then(data => {
       console.log('kiji2取得:', data);
-      const filtered = data.filter(item => item.atsukai_id === Number(selectedId));
+      const filtered = data.filter(item => Number(item.atsukai_id) === Number(selectedId));
       setKiji2List(filtered);
     });
   }, [selectedId]);
