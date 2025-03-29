@@ -29,7 +29,7 @@ export default function NewCom() {
     }
     try {
       // atsukaiの登録
-      const atsukaiRes = await fetch(`http://localhost:4000/atsukai`, {
+      const atsukaiRes = await fetch(`https://business-api-n4v1.onrender.com/atsukai`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: atsukaiName }),
@@ -38,7 +38,7 @@ export default function NewCom() {
 
       // kiji1の登録
       for (const content of kiji1List.filter(v => v.trim())) {
-        await fetch(`http://localhost:4000/kiji1`, {
+        await fetch(`https://business-api-n4v1.onrender.com/kiji1`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ atsukai_id: atsukai.id,  content }),
@@ -47,7 +47,7 @@ export default function NewCom() {
 
       // kiji2の登録
       for (const detail of kiji2List.filter(v => v.trim())) {
-        await fetch(`http://localhost:4000/kiji2`, {
+        await fetch(`https://business-api-n4v1.onrender.com/kiji2`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ atsukai_id: atsukai.id, detail }),

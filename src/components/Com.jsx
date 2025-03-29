@@ -2,16 +2,16 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function Com() {
-  const [atsukaiList, setAstukaiList] = useState([]);
+  const [atsukaiList, setAtsukaiList] = useState([]);
   const [selectedId, setSelectedId] = useState('');
   const [kiji1List, setKiji1List] = useState([]);
   const [kiji2List, setKiji2List] = useState([]);
 
   // 初回に扱い事象一覧を取得
   useEffect(() => {
-    fetch('http://localhost:4000/atsukai')
+    fetch('https://business-api-n4v1.onrender.com/atsukai')
     .then(res => res.json())
-    .then(data => setAstukaiList(data))
+    .then(data => setAtsukaiList(data))
     .catch(err => console.error('取得エラー:', err));
   }, []);
 
@@ -20,14 +20,14 @@ export default function Com() {
     if (!selectedId) return;
 
     // kiji1を取得
-    fetch('http://localhost:4000/kiji1')
+    fetch('https://business-api-n4v1.onrender.com/kiji1')
     .then(res => res.json())
     .then(data => {
       const filtered = data.filter(item => item.atsukai_id === Number(selectedId));
       setKiji1List(filtered);
     });
     // kiji2を取得
-    fetch('http://localhost:4000/kiji2')
+    fetch('https://business-api-n4v1.onrender.com/kiji2')
     .then(res => res.json())
     .then(data => {
       const filtered = data.filter(item => item.atsukai_id === Number(selectedId));

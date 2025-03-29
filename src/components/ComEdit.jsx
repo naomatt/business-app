@@ -14,7 +14,7 @@ export default function ComEdit() {
 
   // 初回：atsukai一覧を取得
   useEffect(() => {
-    fetch('http://localhost:4000/atsukai')
+    fetch('https://business-api-n4v1.onrender.com/atsukai')
       .then(res => res.json())
       .then(data => setAtsukaiList(data));
   }, []);
@@ -27,14 +27,14 @@ export default function ComEdit() {
     const selected = atsukaiList.find(item => String(item.id) === String(selectedId));
     setSelectedAtsukai(selected);
 
-    fetch('http://localhost:4000/kiji1')
+    fetch('https://business-api-n4v1.onrender.com/kiji1')
       .then(res => res.json())
       .then(data => {
         const filtered = data.filter(item => item.atsukai_id === Number(selectedId));
         setKiji1List(filtered);
       });
 
-    fetch('http://localhost:4000/kiji2')
+    fetch('https://business-api-n4v1.onrender.com/kiji2')
       .then(res => res.json())
       .then(data => {
         const filtered = data.filter(item => item.atsukai_id === Number(selectedId));
@@ -52,7 +52,7 @@ export default function ComEdit() {
       const item = kiji2List.find(i => i.id === id);
       body = { detail: value, atsukai_id: item.atsukai_id };
     }
-    fetch(`http://localhost:4000/${type}/${id}`, {
+    fetch(`https://business-api-n4v1.onrender.com/${type}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -61,7 +61,7 @@ export default function ComEdit() {
   // 削除処理
   const handleDelete = (id, type) => {
     if (!window.confirm('削除してよろしいですか？')) return;
-    fetch(`http://localhost:4000/${type}/${id}`, { method: 'DELETE' })
+    fetch(`https://business-api-n4v1.onrender.com/${type}/${id}`, { method: 'DELETE' })
     .then(() => {
       if (type === 'kiji1') {
         setKiji1List(prev => prev.filter(item => item.id !== id));
@@ -76,7 +76,7 @@ export default function ComEdit() {
       type === 'kiji1'
       ? { atsukai_id: Number(selectedId), content: newKiji1 }
       : { atsukai_id: Number(selectedId), detail: newKiji2 };
-    fetch(`http://localhost:4000/${type}`, {
+    fetch(`https://business-api-n4v1.onrender.com/${type}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
