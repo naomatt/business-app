@@ -7,6 +7,7 @@ export default function NewCom() {
   const [ atsukaiName, setAtsukaiName ] = useState('');
   const [ kiji1List, setKiji1List ] = useState(['']);
   const [ kiji2List, setKiji2List ] = useState(['']);
+  const API = import.meta.env.VITE_API_BASE;
 
   const handleAddRow = (type) => {
     if (type === 'kiji1') {
@@ -29,7 +30,7 @@ export default function NewCom() {
     }
     try {
       // atsukaiの登録
-      const atsukaiRes = await fetch(`https://business-api-n4v1.onrender.com/atsukai`, {
+      const atsukaiRes = await fetch(`${API}/atsukai`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: atsukaiName }),
@@ -38,7 +39,7 @@ export default function NewCom() {
 
       // kiji1の登録
       for (const content of kiji1List.filter(v => v.trim())) {
-        await fetch(`https://business-api-n4v1.onrender.com/kiji1`, {
+        await fetch(`${API}/kiji1`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ atsukai_id: atsukai.id,  content }),
@@ -47,7 +48,7 @@ export default function NewCom() {
 
       // kiji2の登録
       for (const detail of kiji2List.filter(v => v.trim())) {
-        await fetch(`https://business-api-n4v1.onrender.com/kiji2`, {
+        await fetch(`${API}/kiji2`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ atsukai_id: atsukai.id, detail }),
