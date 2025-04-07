@@ -13,6 +13,8 @@ export default function Com() {
   const [selectedJyoukyouId, setSelectedJyoukyouId] = useState('');
   const [selectedTypeId, setSelectedTypeId] = useState('');
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(false); // ←★ 追加：ローディングステート
+
   const API = import.meta.env.VITE_API_BASE;
 
   const filteredAtsukaiList = atsukaiList.filter(item =>
@@ -24,7 +26,6 @@ export default function Com() {
       atsukaiList.find(item => item.id == selectedId)?.display_order
     )
   );
-  
 
   useEffect(() => {
     fetch(`${API}/atsukai`)
@@ -47,22 +48,24 @@ export default function Com() {
       .catch(err => console.error('type取得エラー:', err));
   }, []);
 
+  // ★ 修正：kijiデータ取得時に loading を制御
   useEffect(() => {
     if (!selectedId) return;
 
-    fetch(`${API}/kiji1`)
-      .then(res => res.json())
-      .then(data => {
-        const filtered = data.filter(item => Number(item.atsukai_id) === Number(selectedId));
-        setKiji1List(filtered);
-      });
+    setLoading(true); // ←★ ここでローディング開始
 
-    fetch(`${API}/kiji2`)
-      .then(res => res.json())
-      .then(data => {
-        const filtered = data.filter(item => Number(item.atsukai_id) === Number(selectedId));
-        setKiji2List(filtered);
-      });
+    Promise.all([
+      fetch(`${API}/kiji1`).then(res => res.json()),
+      fetch(`${API}/kiji2`).then(res => res.json())
+    ])
+      .then(([k1, k2]) => {
+        const k1Filtered = k1.filter(item => Number(item.atsukai_id) === Number(selectedId));
+        const k2Filtered = k2.filter(item => Number(item.atsukai_id) === Number(selectedId));
+        setKiji1List(k1Filtered);
+        setKiji2List(k2Filtered);
+      })
+      .catch(err => console.error('kiji取得エラー:', err))
+      .finally(() => setLoading(false)); // ←★ 読み込み完了
   }, [selectedId]);
 
   const filteredKiji2 = kiji2List.filter(item => {
@@ -70,14 +73,12 @@ export default function Com() {
     if (!selectedTypeId) return true;
     return Number(item.type_id) === Number(selectedTypeId);
   });
-  // 追加：kiji1もtype_idでフィルタ
+
   const filteredKiji1 = kiji1List.filter(item => {
     if (item.atsukai_id != selectedId) return false;
     if (!selectedTypeId) return true;
     return Number(item.type_id) === Number(selectedTypeId);
   });
-
-  
 
   const getTypeName = (type_id) => {
     const type = typeList.find(t => t.id === type_id);
@@ -117,52 +118,57 @@ export default function Com() {
         </div>
       )}
 
+      {/* ★ ローディング中の表示 */}
+      {loading ? (
+        <div className="text-center text-gray-500 py-12 text-lg animate-pulse">
+          Now Loading...
+        </div>
+      ) : (
+        (kiji1List.length > 0 || kiji2List.length > 0) && (
+          <div className="mt-10 border-t pt-6">
+            <h2 className="text-xl font-semibold text-center text-indigo-600 mb-4">
+              『{atsukaiList.find(a => a.id == selectedId)?.name}』 のCOMの記入例
+            </h2>
 
-
-      {(kiji1List.length > 0 || kiji2List.length > 0) && (
-        <div className="mt-10 border-t pt-6">
-          <h2 className="text-xl font-semibold text-center text-indigo-600 mb-4">
-            『{atsukaiList.find(a => a.id == selectedId)?.name}』 のCOMの記入例
-          </h2>
-
-
-
-          <div className="mb-6 flex flex-col md:flex-row justify-center gap-8">
-            {/* kiji1 */}
-            <div className="md:w-1/2">
-              <h3 className="font-bold text-gray-700 mb-2">記事1</h3>
-              <div className="space-y-3">
-                {filteredKiji1.length > 0 ? (
-                  filteredKiji1.map(item => (
-                    <div key={item.id} className="bg-white p-3 rounded shadow border border-gray-200">
-                      <p className="text-gray-800">
-                        {item.content || <span className="text-gray-400">記入しない</span>}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-400">記事1は記入しない</p>
-                )}
+            <div className="mb-6 flex flex-col md:flex-row justify-center gap-8">
+              {/* kiji1 */}
+              <div className="md:w-1/2">
+                <h3 className="font-bold text-gray-700 mb-2">記事1</h3>
+                <div className="space-y-3">
+                  {filteredKiji1.length > 0 ? (
+                    filteredKiji1.map(item => (
+                      <div key={item.id} className="bg-white p-3 rounded shadow border border-gray-200">
+                        <p className="text-gray-800">
+                          {item.content || <span className="text-gray-400">記入しない</span>}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-400">記事1は記入しない</p>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="md:w-1/2">
-              <h3 className="font-bold text-gray-700 mb-2">記事2</h3>
-              <div className="space-y-3">
-                {filteredKiji2.length > 0 ? (
-                  filteredKiji2.map(item => (
-                    <div key={item.id} className="bg-white p-3 rounded shadow border border-gray-200">
-                      <p className="text-gray-800">
-                        {item.detail || <span className="text-gray-400">記入なし</span>}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-400">記事2がありません</p>
-                )}
+
+              {/* kiji2 */}
+              <div className="md:w-1/2">
+                <h3 className="font-bold text-gray-700 mb-2">記事2</h3>
+                <div className="space-y-3">
+                  {filteredKiji2.length > 0 ? (
+                    filteredKiji2.map(item => (
+                      <div key={item.id} className="bg-white p-3 rounded shadow border border-gray-200">
+                        <p className="text-gray-800">
+                          {item.detail || <span className="text-gray-400">記入なし</span>}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-400">記事2がありません</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )
       )}
 
       <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
