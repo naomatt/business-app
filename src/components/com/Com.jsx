@@ -28,10 +28,12 @@ export default function Com() {
   );
 
   useEffect(() => {
+      setLoading(true);
     fetch(`${API}/atsukai`)
       .then(res => res.json())
       .then(data => setAtsukaiList(data))
-      .catch(err => console.error('atsukai取得エラー:', err));
+      .catch(err => console.error('atsukai取得エラー:', err))
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
