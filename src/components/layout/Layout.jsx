@@ -12,8 +12,7 @@ export default function Layout() {
 
           <nav className="mt-2 sm:mt-0">
             <ul className="flex gap-4 text-blue-500">
-              <li><Link to="/Com" className="hover:underline">COM一覧</Link></li>
-              <li><Link to="/NewCom" className="hover:underline">新規登録</Link></li>
+              <li><Link to="/Com" className="hover:underline">COMの見本</Link></li>
             </ul>
           </nav>
         </div>

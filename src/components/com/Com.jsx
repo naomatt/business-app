@@ -108,15 +108,15 @@ export default function Com() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 bg-[#D5EEFF] rounded-xl shadow-lg">
-      <h1 className="text-3xl font-bold text-center text-[#1B435D] mb-8">COM内容の確認</h1>
+    <div className="min-h-screen bg-white text-black px-6 py-10">
+      <h1 className="text-3xl font-bold text-center mb-10 border-b pb-4 border-black">COM内容の確認</h1>
 
       <div className="mb-6">
         <label className="block font-semibold text-[#1B435D] mb-2">どの扱いを見ますか？</label>
         <select
           value={selectedId}
           onChange={(e) => setSelectedId(e.target.value)}
-          className="border border-gray-300 p-2 rounded w-full sm:w-1/2"
+          className="w-full sm:w-1/2 border border-black p-2 rounded focus:outline-none focus:ring focus:ring-black/30 transition"
         >
           <option value="">選択してください</option>
           {atsukaiList.map(item => (
@@ -127,11 +127,11 @@ export default function Com() {
 
       {filteredTypeList.length > 0 && (
         <div className="mb-6">
-          <label className="block font-semibold text-[#1B435D] mb-2">記事タイプを絞り込む</label>
+          <label className="block font-semibold text-[#1B435D] mb-2">扱いの種類を絞り込む</label>
           <select
             value={selectedTypeId}
             onChange={(e) => setSelectedTypeId(e.target.value)}
-            className="border border-gray-300 p-2 rounded w-full sm:w-1/2"
+            className="w-full sm:w-1/2 border border-black p-2 rounded focus:outline-none focus:ring focus:ring-black/30 transition"
           >
             {filteredTypeList.map(t => (
               <option key={t.id} value={t.id}>{t.name}</option>
@@ -147,20 +147,26 @@ export default function Com() {
       ) : (
         (kiji1List.length > 0 || kiji2List.length > 0) && (
           <div className="mt-8 border-t pt-6">
-            <h2 className="text-xl font-bold text-center text-[#1B435D] mb-6">
-              『{atsukaiList.find(a => a.id == selectedId)?.name}』 のCOM記入例
-            </h2>
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900 tracking-wide">
+                {atsukaiList.find(a => a.id == selectedId)?.name || ''}{typeList.find(t => t.id == selectedTypeId)?.name || ''}
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">の COM 記入例</p>
+            </div>
+
+
+
             {memo && (
-                <div className="my-4 p-3 bg-blue-50 border border-blue-300 text-sm rounded">
-                  <strong className="block text-blue-700">📌 処理メモ</strong>
-                  <p className="text-gray-700 whitespace-pre-wrap">{memo}</p>
+                <div className="my-6 p-4 border border-gray-800 rounded shadow-sm bg-gray-50">
+                  <strong className="text-sm text-gray-600 mb-1 font-semibold">📌 処理メモ</strong>
+                  <p className="whitespace-pre-wrap text-sm text-gray-900">{memo}</p>
                 </div>
               )}
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* 記事1 */}
-              <div className="bg-white p-4 rounded-lg shadow border">
-                <h3 className="text-[#1B435D] font-bold mb-3">記事1</h3>
+              <div className="bg-white border border-black p-4 rounded shadow-sm">
+                <h3 className="text-base font-semibold mb-3 text-black">記事1</h3>
                 {filteredKiji(kiji1List, selectedTypeId).length > 0 ? (
                   filteredKiji(kiji1List, selectedTypeId).map(item => (
                     <div key={item.id} className="p-3 rounded mb-3 shadow-inner">
@@ -171,8 +177,8 @@ export default function Com() {
               </div>
 
               {/* 記事2 */}
-              <div className="bg-white p-4 rounded-lg shadow border border-[#78BBE6]">
-                <h3 className="text-[#1B435D] font-bold mb-3">記事2</h3>
+              <div className="bg-white border border-black p-4 rounded shadow-sm">
+                <h3 className="text-base font-semibold mb-3 text-black">記事2</h3>
                 {filteredKiji(kiji2List, selectedTypeId).length > 0 ? (
                   filteredKiji(kiji2List, selectedTypeId).map(item => (
                     <div key={item.id} className="p-3 rounded mb-3 shadow-inner">
@@ -187,7 +193,7 @@ export default function Com() {
             <div className="mt-10 flex justify-center">
               <Link
                 to={`/comedit/${selectedId}`}
-                className="px-6 py-3 bg-[#F99F48] text-white font-semibold rounded shadow hover:bg-orange-500 transition"
+                className="mt-8 inline-block px-6 py-2 border border-black text-black rounded hover:bg-black hover:text-white transition"
               >
                 内容を編集する
               </Link>

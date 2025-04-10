@@ -2,26 +2,42 @@ import { Link } from 'react-router-dom';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* ヘッダー部分 */}
-      <header className="bg-white shadow p-4">
-        <h1 className="text-xl font-bold text-gray-800">Comの見本</h1>
-      </header>
-
-      {/* 中央メニュー */}
-      <main className="flex flex-col items-center mt-10 space-y-4">
+    <div className="min-h-screen bg-white text-black font-sans">
+      {/* ヘッダー */}
+      <header className="border-b border-gray-300 py-6 px-4 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-wide">COMのこと</h1>
         <Link
           to="/Com"
-          className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          className="px-5 py-2 border border-black text-black hover:bg-black hover:text-white transition rounded-md text-sm"
         >
           COMの見本を見る
         </Link>
-        <Link
-          to="/NewCom"
-          className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
-        >
-          COMの見本を追加
-        </Link>
+      </header>
+
+      {/* メインメニュー */}
+      <main className="flex flex-col items-center justify-center py-20 space-y-6">
+        <p className="text-lg text-gray-700">ようこそ。</p>
+        <p className="text-sm text-gray-700">ページを選んでください。</p>
+
+        {/* 今後ページ追加されることを想定 */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Link
+            to="/Com"
+            className="px-6 py-3 border border-black rounded hover:bg-black hover:text-white transition"
+          >
+            COMの見本を見る
+          </Link>
+
+          {/* 追加予定ボタンの例（コメントアウトしてもOK） */}
+          {/* 
+          <Link
+            to="/AnotherPage"
+            className="px-6 py-3 border border-black rounded hover:bg-black hover:text-white transition"
+          >
+            別ページ
+          </Link>
+          */}
+        </div>
       </main>
     </div>
   );

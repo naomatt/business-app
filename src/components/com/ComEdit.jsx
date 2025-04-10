@@ -20,6 +20,48 @@ export default function ComEdit() {
   const [memoId, setMemoId] = useState(null);
   const [newMemoContent, setNewMemoContent] = useState('');
   const [memoList, setMemoList] = useState([]);
+  // 🔄 状態で管理
+  const [linkedTypeIds, setLinkedTypeIds] = useState([]);
+
+  // 初回のみデータ取得（API経由）
+  useEffect(() => {
+    const fetchLinkedIds = async () => {
+      const [kiji1Res, kiji2Res, memoRes] = await Promise.all([
+        fetch(`${API}/kiji1`).then(res => res.json()),
+        fetch(`${API}/kiji2`).then(res => res.json()),
+        fetch(`${API}/memo/list`).then(res => res.json())
+      ]);
+
+      setKiji1List(kiji1Res); // 🔁 ついでにここで状態に保持もOK
+      setKiji2List(kiji2Res);
+      setMemoList(memoRes);
+
+      const ids = new Set();
+      kiji1Res.forEach(k => k.type_id && ids.add(Number(k.type_id)));
+      kiji2Res.forEach(k => k.type_id && ids.add(Number(k.type_id)));
+      memoRes.forEach(m => m.type_id && ids.add(Number(m.type_id)));
+
+      setLinkedTypeIds(Array.from(ids));
+    };
+
+    fetchLinkedIds();
+  }, [API]);
+
+  // ✨ リストの更新を検知して再構成（手動削除時のリアルタイム反映）
+  useEffect(() => {
+    const updateLinkedIds = () => {
+      const ids = new Set();
+      kiji1List.forEach(k => k.type_id && ids.add(Number(k.type_id)));
+      kiji2List.forEach(k => k.type_id && ids.add(Number(k.type_id)));
+      memoList.forEach(m => m.type_id && ids.add(Number(m.type_id)));
+
+      setLinkedTypeIds(Array.from(ids));
+    };
+
+    updateLinkedIds();
+  }, [kiji1List, kiji2List, memoList]);
+
+
   
 
    // typeとatsukaiの両方が選ばれた後にメモを取得
@@ -134,15 +176,34 @@ export default function ComEdit() {
       });
   };
 
-  const handleDeleteType = (id) => {
+  const handleDeleteType = async (id) => {
     if (!window.confirm('本当に削除しますか？')) return;
-    fetch(`${API}/type/${id}`, {
-      method: 'DELETE',
-    })
-      .then(() => {
-        setTypeList(prev => prev.filter(t => t.id !== id));
-      });
+  
+    try {
+      const [kiji1Res, kiji2Res, memoRes] = await Promise.all([
+        fetch(`${API}/kiji1`).then(res => res.json()),
+        fetch(`${API}/kiji2`).then(res => res.json()),
+        fetch(`${API}/memo/list`).then(res => res.json())
+      ]);
+  
+      const isKiji1Linked = kiji1Res.some(k => String(k.type_id) === String(id));
+      const isKiji2Linked = kiji2Res.some(k => String(k.type_id) === String(id));
+      const isMemoLinked = memoRes.some(m => String(m.type_id) === String(id));
+  
+      if (isKiji1Linked || isKiji2Linked || isMemoLinked) {
+        alert('このtypeには紐づく記事またはメモがあるため削除できません。先に関連データを削除してください。');
+        return;
+      }
+  
+      await fetch(`${API}/type/${id}`, { method: 'DELETE' });
+      setTypeList(prev => prev.filter(t => t.id !== id));
+  
+    } catch (err) {
+      alert('削除時にエラーが発生しました。コンソールをご確認ください。');
+      console.error('削除エラー:', err);
+    }
   };
+  
 
 
   useEffect(() => {
@@ -428,15 +489,15 @@ export default function ComEdit() {
   
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold text-indigo-600 mb-6 text-center">COMの内容を編集する</h2>
+    <div className="max-w-4xl mx-auto px-4 py-10 bg-white text-black">
+      <h2 className="text-3xl font-bold mb-8 text-center border-b border-black pb-4">COMの内容を編集する</h2>
       {/* 扱いの選択 */}
-      <div className="mb-10">
-        <label className="font-semibold block mb-2">どの扱いを編集する？</label>
+      <div className="mb-10 bg-gray-100 border border-black rounded-xl p-6 shadow-sm">
+        <label className="text-sm text-gray-600 mb-1">どの扱いを編集する？</label>
         <select
           value={selectedId}
           onChange={e => setSelectedId(e.target.value)}
-          className="border border-gray-300 p-2 rounded w-full"
+          className="border border-black p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-black/30"
         >
           <option value="">選択してください</option>
           {atsukaiList.map(item => (
@@ -448,13 +509,13 @@ export default function ComEdit() {
       {selectedAtsukai && (
         <div>
           {/* type 編集セクション */}
-          <div className="mb-10 bg-gray-50 border border-gray-300 rounded-xl p-6 shadow-sm">
+          <div className="mb-10 bg-gray-100 border border-black rounded-xl p-6 shadow-sm">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">処理内容を追加・編集・削除</h3>
 
             <div className="flex flex-col md:flex-row gap-6">
               {/* いまある処理一覧 */}
               <div className="flex-1">
-                <h4 className="font-semibold mb-2 text-gray-600">存在する処理内容</h4>
+                <h4 className="text-sm text-gray-600 mb-1">存在する処理内容</h4>
                 <ul className="space-y-2">
                   {filteredTypeList.map(t => (
                     <li key={t.id} className="flex items-center space-x-2">
@@ -466,16 +527,35 @@ export default function ComEdit() {
                       <div className="flex space-x-1">
                         <button
                           onClick={() => handleUpdateType(t.id)}
-                          className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
+                          className="px-3 py-1 bg-black text-white rounded text-sm hover:bg-white hover:text-black border border-black transition"
                         >
                           更新
                         </button>
-                        <button
-                          onClick={() => handleDeleteType(t.id)}
-                          className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 whitespace-nowrap"
-                        >
-                          削除
-                        </button>
+
+                        <div className="relative group inline-block">
+                          <button
+                            onClick={() => handleDeleteType(t.id)}
+                            disabled={linkedTypeIds.includes(t.id)}
+                            className={`px-3 py-1 text-sm rounded border border-black transition
+                              ${linkedTypeIds.includes(t.id)
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'bg-red-500 text-white hover:bg-white hover:text-black'}
+                            `}
+                          >
+                            削除
+                          </button>
+
+                          {linkedTypeIds.includes(t.id) && (
+                            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-max max-w-[200px] 
+                                            text-xs bg-black text-white px-2 py-1 rounded 
+                                            opacity-0 group-hover:opacity-100 transition pointer-events-none z-50">
+                              紐づくデータがあるため削除できません
+                            </div>
+                          )}
+                        </div>
+
+
+
                       </div>
                     </li>
                   ))}
@@ -484,7 +564,7 @@ export default function ComEdit() {
 
               {/* 新規処理の追加 */}
               <div className="flex-1">
-                <label className="font-semibold block mb-2 text-gray-600">新しい処理内容を追加</label>
+                <label className="text-sm text-gray-600 mb-1">新しい処理内容を追加</label>
                 <div className="flex space-x-2">
                   <input
                     type="text"
@@ -495,7 +575,7 @@ export default function ComEdit() {
                   />
                   <button
                     onClick={handleAddType}
-                    className="px-3 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded whitespace-nowrap"
+                    className="px-3 py-1 bg-black text-white rounded text-sm hover:bg-white hover:text-black border border-black transition"
                   >
                     追加
                   </button>
@@ -504,7 +584,7 @@ export default function ComEdit() {
             </div>
           </div>
 
-          <div className="mb-10 bg-gray-50 border border-gray-300 rounded-xl p-4 md:p-6 shadow-sm">
+          <div className="mb-10 bg-gray-100 border border-black rounded-xl p-6 shadow-sm">
             <h3 className="text-lg font-semibold mb-4 text-gray-700">記事を編集する処理</h3>
             <select
               value={selectedTypeId}
@@ -519,9 +599,8 @@ export default function ComEdit() {
           </div>
 
           {/* 記事1と記事2とMemoの新規追加 */}
-          <div className="mb-10 bg-gray-50 border border-gray-300 rounded-xl p-4 md:p-6 shadow-sm">
-            <div className="p-5 mb-10 rounded bg-orange-100">
-              <h3 className="text-lg font-semibold mb-2 text-gray-700">新規追加</h3>
+          <div className="mb-10 bg-gray-100 border border-black rounded-xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold mb-2 text-gray-700">新規で追加</h3>
               
               <div className="flex flex-wrap items-start gap-4">
                 
@@ -534,7 +613,7 @@ export default function ComEdit() {
                     placeholder="記事1"
                     value={newKiji1}
                     onChange={(e) => setNewKiji1(e.target.value)}
-                    className="border border-gray-300 p-2 text-sm rounded h-24 resize-none w-full"
+                    className="border border-black rounded p-2 w-full text-sm resize-none focus:outline-none focus:ring-1 focus:ring-black"
                   />
                 </div>
 
@@ -547,18 +626,9 @@ export default function ComEdit() {
                     placeholder="記事2"
                     value={newKiji2}
                     onChange={(e) => setNewKiji2(e.target.value)}
-                    className="border border-gray-300 p-2 text-sm rounded h-24 resize-none w-full"
+                    className="border border-black rounded p-2 w-full text-sm resize-none focus:outline-none focus:ring-1 focus:ring-black"
                   />
                 </div>
-              </div>
-              {/* 登録ボタン */}
-              <div>
-                <button
-                  onClick={handleAddBoth}
-                  className="w-full mt-1 px-4 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
-                >
-                  記事1と記事2を新規登録
-                </button>
               </div>
               {/* memoの登録 */}
               <div className="flex-1 flex flex-col space-y-1 min-w-[300px] mt-10">
@@ -569,12 +639,12 @@ export default function ComEdit() {
                     <textarea
                       value={memoContent}
                       onChange={(e) => setMemoContent(e.target.value)}
-                      className="w-full border border-gray-300 p-2 rounded h-24 resize-none text-sm"
+                      className="border border-black rounded p-2 w-full text-sm resize-none focus:outline-none focus:ring-1 focus:ring-black"
                       placeholder="メモ内容を編集..."
                     />
                     <button
                       onClick={handleMemoSave}
-                      className="mt-2 px-4 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                      className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-white hover:text-black border border-black transition"
                     >
                       メモを更新
                     </button>
@@ -585,26 +655,34 @@ export default function ComEdit() {
                     <textarea
                       value={newMemoContent}
                       onChange={(e) => setNewMemoContent(e.target.value)}
-                      className="w-full border border-gray-300 p-2 rounded h-24 resize-none text-sm"
+                      className="border border-black rounded p-2 w-full text-sm resize-none focus:outline-none focus:ring-1 focus:ring-black"
                       placeholder="新しいメモを入力..."
                     />
                     <button
                       onClick={handleAddNewMemo}
-                      className="mt-2 px-4 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                      className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-white hover:text-black border border-black transition"
                     >
-                      メモを登録
+                      メモだけ登録
                     </button>
                   </>
                 )}
               </div>
+            {/* 登録ボタン */}
+            <div className="mt-5">
+              <button
+                onClick={handleAddBoth}
+                className="px-3 py-1 bg-black text-white rounded text-sm hover:bg-white hover:text-black border border-black transition"
+              >
+                記事1・記事2・メモを登録
+              </button>
             </div>
           </div>
 
           {/* すでにある記事の編集 */}
-          <div className="mb-10 bg-gray-50 border border-gray-300 rounded-xl p-4 md:p-6 shadow-sm">
+          <div className="mb-10 bg-gray-100 border border-black rounded-xl p-6 shadow-sm">
 
             {/* 編集欄 */}
-            <div className="mb-10 p-5 bg-blue-200">
+            
               <h3 className="text-lg font-semibold mb-4 text-gray-700">既存の記事を編集</h3> 
               
               {/* Memoの編集 */}
@@ -765,7 +843,7 @@ export default function ComEdit() {
                 </div>
 
               </div>
-            </div>
+            
 
           </div>
         </div>
@@ -773,7 +851,7 @@ export default function ComEdit() {
       <div className="mt-10 flex justify-center">
               <Link
                 to={`/com/`}
-                className="px-6 py-3 bg-[#F99F48] text-white font-semibold rounded shadow hover:bg-orange-500 transition"
+                className="mt-8 inline-block px-6 py-2 border border-black text-black rounded hover:bg-black hover:text-white transition"
               >
                 Com一覧へ
               </Link>
