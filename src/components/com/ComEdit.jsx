@@ -61,9 +61,6 @@ export default function ComEdit() {
     updateLinkedIds();
   }, [kiji1List, kiji2List, memoList]);
 
-
-  
-
    // typeとatsukaiの両方が選ばれた後にメモを取得
   useEffect(() => {
     if (!selectedTypeId || selectedTypeId === '__null__' || !selectedId) {
@@ -602,10 +599,10 @@ export default function ComEdit() {
           <div className="mb-10 bg-gray-100 border border-black rounded-xl p-6 shadow-sm">
               <h3 className="text-lg font-semibold mb-2 text-gray-700">新規で追加</h3>
               
-              <div className="flex flex-wrap items-start gap-4">
+              <div className="flex flex-col md:flex-row items-start gap-4">
                 
                 {/* 記事1 */}
-                <div className="flex-1 flex flex-col space-y-1 min-w-[300px]">
+                <div className="w-full flex-1 flex flex-col space-y-1">
                   <div className="text-sm text-indigo-600 font-semibold">
                     【{atsukaiName}{typeName} の記事1】
                   </div>
@@ -618,7 +615,7 @@ export default function ComEdit() {
                 </div>
 
                 {/* 記事2 */}
-                <div className="flex-1 flex flex-col space-y-1 min-w-[300px]">
+                <div className="w-full flex-1 flex flex-col space-y-1">
                   <div className="text-sm text-indigo-600 font-semibold">
                     【{atsukaiName}{typeName} の記事2】
                   </div>
@@ -631,7 +628,7 @@ export default function ComEdit() {
                 </div>
               </div>
               {/* memoの登録 */}
-              <div className="flex-1 flex flex-col space-y-1 min-w-[300px] mt-10">
+              <div className="flex-1 flex flex-col space-y-1 mt-10">
                 <h3 className="text-lg font-semibold text-indigo-700">{atsukaiName}{typeName}のMemo</h3>
                 {memoId ? (
                   <>
